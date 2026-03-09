@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore.txt" />
+  </Folder>
+  <Project Path="Helpdesk.Api/Helpdesk.Api.csproj" />
+  <Project Path="Helpdesk.Application/Helpdesk.Application.csproj" />
+  <Project Path="Helpdesk.Domain/Helpdesk.Domain.csproj" />
+  <Project Path="Helpdesk.Infrastructure/Helpdesk.Infrastructure.csproj" />
+  <Project Path="Helpdesk.Tests/Helpdesk.Tests.csproj" />
+</Solution>
