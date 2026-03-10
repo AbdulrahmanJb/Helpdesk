@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/">
-    <File Path=".gitignore.txt" />
+    <File Path=".gitignore" />
   </Folder>
   <Project Path="Helpdesk.Api/Helpdesk.Api.csproj" />
   <Project Path="Helpdesk.Application/Helpdesk.Application.csproj" />
