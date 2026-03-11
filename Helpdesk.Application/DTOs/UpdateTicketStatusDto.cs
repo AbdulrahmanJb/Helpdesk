@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Helpdesk.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Helpdesk.Application.DTOs
 {
-    internal class UpdateTicketStatusDto
+    public class UpdateTicketStatusDto
     {
+        public TicketStatus Status { get; set; }
     }
 }

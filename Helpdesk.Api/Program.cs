@@ -1,4 +1,7 @@
 
+using Helpdesk.Application.Interfaces;
+using Helpdesk.Application.Services;
+
 namespace Helpdesk.Api
 {
     public class Program
@@ -13,6 +16,8 @@ namespace Helpdesk.Api
             // Swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddScoped<ITicketService, TicketService>();
+
 
             var app = builder.Build();
 

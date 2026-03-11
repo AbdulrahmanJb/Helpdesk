@@ -1,12 +1,19 @@
-﻿using System;
+﻿using Helpdesk.Application.DTOs;
+using Helpdesk.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Helpdesk.Domain.Entities;
 
 
 namespace Helpdesk.Application.Interfaces;
 
 public interface ITicketService
 {
-    IEnumerable<Ticket> GetTickets();
+    Task<TicketResponseDto> CreateTicketAsync(CreateTicketDto dto);
+
+    Task<List<TicketResponseDto>> GetAllTicketsAsync();
+
+    Task<TicketResponseDto?> GetTicketByIdAsync(int id);
+
+    Task<bool> UpdateTicketStatusAsync(int id, UpdateTicketStatusDto dto);
 }
