@@ -1,6 +1,8 @@
-
 using Helpdesk.Application.Interfaces;
 using Helpdesk.Application.Services;
+using Helpdesk.Infrastructure.Data;
+using Helpdesk.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Helpdesk.Api
 {
@@ -10,18 +12,21 @@ namespace Helpdesk.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services
             builder.Services.AddControllers();
 
-            // Swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddScoped<ITicketService, TicketService>();
 
+            builder.Services.AddDbContext<HelpdeskDbContext>(options =>
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection")
+                ));
+
+            builder.Services.AddScoped<ITicketService, TicketService>();
+            builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
             var app = builder.Build();
 
-            // Enable Swagger
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
