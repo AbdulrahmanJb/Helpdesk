@@ -1,9 +1,11 @@
 ﻿using Helpdesk.Application.DTOs;
 using Helpdesk.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Helpdesk.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TicketsController : ControllerBase
@@ -32,7 +34,7 @@ public class TicketsController : ControllerBase
 
         return Ok(ticket);
     }
-
+    [Authorize(Roles = "Admin,Agent")]
     [HttpPost]
     public async Task<IActionResult> CreateTicket(CreateTicketDto dto)
     {
@@ -44,7 +46,7 @@ public class TicketsController : ControllerBase
             ticket
         );
     }
-
+    [Authorize(Roles = "Admin,Agent")]
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(int id, UpdateTicketStatusDto dto)
     {

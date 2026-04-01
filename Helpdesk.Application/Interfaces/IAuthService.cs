@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Helpdesk.Application.DTOs;
 
-namespace Helpdesk.Application.Interfaces
+namespace Helpdesk.Application.Interfaces;
+
+public interface IAuthService
 {
-    internal class IAuthService
-    {
-    }
+    Task<LoginResponseDto?> LoginAsync(LoginRequestDto dto);
 }

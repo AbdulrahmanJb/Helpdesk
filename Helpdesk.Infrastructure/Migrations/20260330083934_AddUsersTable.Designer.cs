@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Helpdesk.Infrastructure.Migrations
 {
     [DbContext(typeof(HelpdeskDbContext))]
-    [Migration("20260317095829_AddUsersTable")]
+    [Migration("20260330083934_AddUsersTable")]
     partial class AddUsersTable
     {
         /// <inheritdoc />
@@ -59,6 +59,37 @@ namespace Helpdesk.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tickets");
+                });
+
+            modelBuilder.Entity("Helpdesk.Domain.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }
