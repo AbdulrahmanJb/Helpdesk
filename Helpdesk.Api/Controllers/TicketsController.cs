@@ -1,7 +1,7 @@
 ﻿using Helpdesk.Application.DTOs;
 using Helpdesk.Application.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Helpdesk.Api.Controllers;
 
@@ -25,7 +25,7 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTicket(int id)
+    public async Task<IActionResult> GetTicketById(int id)
     {
         var ticket = await _ticketService.GetTicketByIdAsync(id);
 
@@ -34,18 +34,16 @@ public class TicketsController : ControllerBase
 
         return Ok(ticket);
     }
-    [Authorize(Roles = "Admin,Agent")]
+
+    [Authorize(Roles = "Requester,Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateTicket(CreateTicketDto dto)
     {
         var ticket = await _ticketService.CreateTicketAsync(dto);
 
-        return CreatedAtAction(
-            nameof(GetTicket),
-            new { id = ticket.Id },
-            ticket
-        );
+        return CreatedAtAction(nameof(GetTicketById), new { id = ticket.Id }, ticket);
     }
+
     [Authorize(Roles = "Admin,Agent")]
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(int id, UpdateTicketStatusDto dto)
@@ -54,6 +52,18 @@ public class TicketsController : ControllerBase
 
         if (!updated)
             return NotFound();
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id}/assign")]
+    public async Task<IActionResult> AssignTicket(int id, AssignTicketDto dto)
+    {
+        var assigned = await _ticketService.AssignTicketAsync(id, dto);
+
+        if (!assigned)
+            return BadRequest("Ticket not found, agent not found, or selected user is not an agent.");
 
         return NoContent();
     }

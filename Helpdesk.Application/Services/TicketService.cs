@@ -8,10 +8,12 @@ namespace Helpdesk.Application.Services;
 public class TicketService : ITicketService
 {
     private readonly ITicketRepository _ticketRepository;
+    private readonly IUserRepository _userRepository;
 
-    public TicketService(ITicketRepository ticketRepository)
+    public TicketService(ITicketRepository ticketRepository, IUserRepository userRepository)
     {
         _ticketRepository = ticketRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<TicketResponseDto> CreateTicketAsync(CreateTicketDto dto)
@@ -86,6 +88,29 @@ public class TicketService : ITicketService
             return false;
 
         ticket.Status = dto.Status;
+
+        await _ticketRepository.UpdateAsync(ticket);
+
+        return true;
+    }
+
+    public async Task<bool> AssignTicketAsync(int ticketId, AssignTicketDto dto)
+    {
+        var ticket = await _ticketRepository.GetByIdAsync(ticketId);
+
+        if (ticket == null)
+            return false;
+
+        var agent = await _userRepository.GetByIdAsync(dto.AgentId);
+
+        if (agent == null)
+            return false;
+
+        if (agent.Role != UserRole.Agent)
+            return false;
+
+        ticket.AgentId = dto.AgentId;
+        ticket.Status = TicketStatus.Assigned;
 
         await _ticketRepository.UpdateAsync(ticket);
 
