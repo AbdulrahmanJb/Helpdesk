@@ -9,11 +9,13 @@ public class TicketService : ITicketService
 {
     private readonly ITicketRepository _ticketRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditTrailService _auditTrailService;
 
-    public TicketService(ITicketRepository ticketRepository, IUserRepository userRepository)
+    public TicketService(ITicketRepository ticketRepository, IUserRepository userRepository, IAuditTrailService auditTrailService)
     {
         _ticketRepository = ticketRepository;
         _userRepository = userRepository;
+        _auditTrailService = auditTrailService;
     }
 
     public async Task<TicketResponseDto> CreateTicketAsync(CreateTicketDto dto, int requesterId)
@@ -29,6 +31,11 @@ public class TicketService : ITicketService
         };
 
         var createdTicket = await _ticketRepository.CreateAsync(ticket);
+        await _auditTrailService.RecordAsync(
+            createdTicket.Id,
+            requesterId,
+            "TicketCreated",
+            $"Ticket created with priority {createdTicket.Priority}.");
 
         return new TicketResponseDto
         {
@@ -119,14 +126,20 @@ public class TicketService : ITicketService
         if (!IsValidStatusTransition(ticket.Status, dto.Status))
             return UpdateTicketStatusResult.InvalidTransition;
 
+        var previousStatus = ticket.Status;
         ticket.Status = dto.Status;
 
         await _ticketRepository.UpdateAsync(ticket);
+        await _auditTrailService.RecordAsync(
+            ticket.Id,
+            userId,
+            "StatusChanged",
+            $"Status changed from {previousStatus} to {ticket.Status}.");
 
         return UpdateTicketStatusResult.Success;
     }
 
-    public async Task<bool> AssignTicketAsync(int ticketId, AssignTicketDto dto)
+    public async Task<bool> AssignTicketAsync(int ticketId, AssignTicketDto dto, int actorId)
     {
         var ticket = await _ticketRepository.GetByIdAsync(ticketId);
 
@@ -145,6 +158,11 @@ public class TicketService : ITicketService
         ticket.Status = TicketStatus.Assigned;
 
         await _ticketRepository.UpdateAsync(ticket);
+        await _auditTrailService.RecordAsync(
+            ticket.Id,
+            actorId,
+            "TicketAssigned",
+            $"Ticket assigned to agent {dto.AgentId}.");
 
         return true;
     }

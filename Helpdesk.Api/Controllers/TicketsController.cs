@@ -91,7 +91,12 @@ public class TicketsController : ControllerBase
     [HttpPut("{id}/assign")]
     public async Task<IActionResult> AssignTicket(int id, AssignTicketDto dto)
     {
-        var assigned = await _ticketService.AssignTicketAsync(id, dto);
+        var actorIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(actorIdClaim, out var actorId))
+            return Unauthorized();
+
+        var assigned = await _ticketService.AssignTicketAsync(id, dto, actorId);
 
         if (!assigned)
             return BadRequest("Ticket not found, agent not found, or selected user is not an agent.");

@@ -48,9 +48,11 @@ namespace Helpdesk.Api
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+            builder.Services.AddScoped<IAuditTrailRepository, AuditTrailRepository>();
             builder.Services.AddScoped<ITicketService, TicketService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<ICommentService, CommentService>();
+            builder.Services.AddScoped<IAuditTrailService, AuditTrailService>();
 
             var jwtKey = builder.Configuration["Jwt:Key"]!;
 

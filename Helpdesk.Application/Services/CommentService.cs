@@ -9,11 +9,13 @@ public class CommentService : ICommentService
 {
     private readonly ICommentRepository _commentRepository;
     private readonly ITicketRepository _ticketRepository;
+    private readonly IAuditTrailService _auditTrailService;
 
-    public CommentService(ICommentRepository commentRepository, ITicketRepository ticketRepository)
+    public CommentService(ICommentRepository commentRepository, ITicketRepository ticketRepository, IAuditTrailService auditTrailService)
     {
         _commentRepository = commentRepository;
         _ticketRepository = ticketRepository;
+        _auditTrailService = auditTrailService;
     }
 
     public async Task<List<CommentResponseDto>?> GetTicketCommentsAsync(int ticketId, int userId, string role)
@@ -55,6 +57,11 @@ public class CommentService : ICommentService
             IsInternal = dto.IsInternal,
             CreatedAt = DateTime.UtcNow
         });
+        await _auditTrailService.RecordAsync(
+            ticketId,
+            userId,
+            "CommentAdded",
+            dto.IsInternal ? "Internal comment added." : "Public comment added.");
 
         return new CreateCommentResponseDto
         {

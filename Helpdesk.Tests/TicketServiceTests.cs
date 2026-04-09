@@ -12,7 +12,7 @@ public class TicketServiceTests
     [Fact]
     public async Task CreateTicketAsync_UsesAuthenticatedRequesterId()
     {
-        var service = CreateService(out var ticketRepository, out _);
+        var service = CreateService(out var ticketRepository, out _, out var auditTrailService);
         var dto = new CreateTicketDto
         {
             Title = "Printer issue",
@@ -26,12 +26,13 @@ public class TicketServiceTests
         Assert.Single(ticketRepository.Tickets);
         Assert.Equal(7, ticketRepository.Tickets[0].RequesterId);
         Assert.Equal(TicketStatus.New, ticketRepository.Tickets[0].Status);
+        Assert.Single(auditTrailService.Entries);
     }
 
     [Fact]
     public async Task GetAllTicketsAsync_ForRequester_ReturnsOnlyOwnedTickets()
     {
-        var service = CreateService(out var ticketRepository, out _);
+        var service = CreateService(out var ticketRepository, out _, out _);
         ticketRepository.Tickets.AddRange(
             new Ticket { Id = 1, Title = "A", Description = "Owned by requester.", RequesterId = 2 },
             new Ticket { Id = 2, Title = "B", Description = "Not owned by requester.", RequesterId = 9 },
@@ -46,7 +47,7 @@ public class TicketServiceTests
     [Fact]
     public async Task GetTicketByIdAsync_ForAgent_ReturnsNullWhenTicketIsAssignedToAnotherAgent()
     {
-        var service = CreateService(out var ticketRepository, out _);
+        var service = CreateService(out var ticketRepository, out _, out _);
         ticketRepository.Tickets.Add(new Ticket
         {
             Id = 4,
@@ -64,7 +65,7 @@ public class TicketServiceTests
     [Fact]
     public async Task UpdateTicketStatusAsync_RejectsInvalidTransition()
     {
-        var service = CreateService(out var ticketRepository, out _);
+        var service = CreateService(out var ticketRepository, out _, out _);
         ticketRepository.Tickets.Add(new Ticket
         {
             Id = 5,
@@ -88,7 +89,7 @@ public class TicketServiceTests
     [Fact]
     public async Task UpdateTicketStatusAsync_AllowsValidTransitionForAssignedAgent()
     {
-        var service = CreateService(out var ticketRepository, out _);
+        var service = CreateService(out var ticketRepository, out _, out var auditTrailService);
         ticketRepository.Tickets.Add(new Ticket
         {
             Id = 6,
@@ -107,12 +108,13 @@ public class TicketServiceTests
 
         Assert.Equal(UpdateTicketStatusResult.Success, result);
         Assert.Equal(TicketStatus.InProgress, ticketRepository.Tickets[0].Status);
+        Assert.Single(auditTrailService.Entries);
     }
 
     [Fact]
     public async Task UpdateTicketStatusAsync_RejectsAgentWhoDoesNotOwnTicket()
     {
-        var service = CreateService(out var ticketRepository, out _);
+        var service = CreateService(out var ticketRepository, out _, out _);
         ticketRepository.Tickets.Add(new Ticket
         {
             Id = 7,
@@ -133,11 +135,12 @@ public class TicketServiceTests
         Assert.Equal(TicketStatus.Assigned, ticketRepository.Tickets[0].Status);
     }
 
-    private static TicketService CreateService(out FakeTicketRepository ticketRepository, out FakeUserRepository userRepository)
+    private static TicketService CreateService(out FakeTicketRepository ticketRepository, out FakeUserRepository userRepository, out FakeAuditTrailService auditTrailService)
     {
         ticketRepository = new FakeTicketRepository();
         userRepository = new FakeUserRepository();
-        return new TicketService(ticketRepository, userRepository);
+        auditTrailService = new FakeAuditTrailService();
+        return new TicketService(ticketRepository, userRepository, auditTrailService);
     }
 
     private sealed class FakeTicketRepository : ITicketRepository
@@ -182,6 +185,31 @@ public class TicketServiceTests
         public Task<User> CreateAsync(User user)
         {
             return Task.FromResult(user);
+        }
+    }
+
+    private sealed class FakeAuditTrailService : IAuditTrailService
+    {
+        public List<AuditTrailEntryResponseDto> Entries { get; } = [];
+
+        public Task RecordAsync(int ticketId, int actorId, string action, string description)
+        {
+            Entries.Add(new AuditTrailEntryResponseDto
+            {
+                Id = Entries.Count + 1,
+                TicketId = ticketId,
+                ActorId = actorId,
+                Action = action,
+                Description = description,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public Task<List<AuditTrailEntryResponseDto>?> GetTicketAuditTrailAsync(int ticketId, int userId, string role)
+        {
+            return Task.FromResult<List<AuditTrailEntryResponseDto>?>(Entries.Where(entry => entry.TicketId == ticketId).ToList());
         }
     }
 }
