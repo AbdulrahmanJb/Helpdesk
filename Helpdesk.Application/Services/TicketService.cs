@@ -16,14 +16,14 @@ public class TicketService : ITicketService
         _userRepository = userRepository;
     }
 
-    public async Task<TicketResponseDto> CreateTicketAsync(CreateTicketDto dto)
+    public async Task<TicketResponseDto> CreateTicketAsync(CreateTicketDto dto, int requesterId)
     {
         var ticket = new Ticket
         {
             Title = dto.Title,
             Description = dto.Description,
             Priority = dto.Priority,
-            RequesterId = dto.RequesterId,
+            RequesterId = requesterId,
             Status = TicketStatus.New,
             CreatedAt = DateTime.UtcNow
         };
@@ -43,11 +43,19 @@ public class TicketService : ITicketService
         };
     }
 
-    public async Task<List<TicketResponseDto>> GetAllTicketsAsync()
+    public async Task<List<TicketResponseDto>> GetAllTicketsAsync(int userId, string role)
     {
         var tickets = await _ticketRepository.GetAllAsync();
 
-        return tickets.Select(ticket => new TicketResponseDto
+        var filteredTickets = role switch
+        {
+            nameof(UserRole.Admin) => tickets,
+            nameof(UserRole.Agent) => tickets.Where(ticket => ticket.AgentId == userId).ToList(),
+            nameof(UserRole.Requester) => tickets.Where(ticket => ticket.RequesterId == userId).ToList(),
+            _ => []
+        };
+
+        return filteredTickets.Select(ticket => new TicketResponseDto
         {
             Id = ticket.Id,
             Title = ticket.Title,
@@ -60,11 +68,22 @@ public class TicketService : ITicketService
         }).ToList();
     }
 
-    public async Task<TicketResponseDto?> GetTicketByIdAsync(int id)
+    public async Task<TicketResponseDto?> GetTicketByIdAsync(int id, int userId, string role)
     {
         var ticket = await _ticketRepository.GetByIdAsync(id);
 
         if (ticket == null)
+            return null;
+
+        var canAccessTicket = role switch
+        {
+            nameof(UserRole.Admin) => true,
+            nameof(UserRole.Agent) => ticket.AgentId == userId,
+            nameof(UserRole.Requester) => ticket.RequesterId == userId,
+            _ => false
+        };
+
+        if (!canAccessTicket)
             return null;
 
         return new TicketResponseDto
@@ -80,18 +99,31 @@ public class TicketService : ITicketService
         };
     }
 
-    public async Task<bool> UpdateTicketStatusAsync(int id, UpdateTicketStatusDto dto)
+    public async Task<UpdateTicketStatusResult> UpdateTicketStatusAsync(int id, UpdateTicketStatusDto dto, int userId, string role)
     {
         var ticket = await _ticketRepository.GetByIdAsync(id);
 
         if (ticket == null)
-            return false;
+            return UpdateTicketStatusResult.NotFound;
+
+        var canUpdateTicket = role switch
+        {
+            nameof(UserRole.Admin) => true,
+            nameof(UserRole.Agent) => ticket.AgentId == userId,
+            _ => false
+        };
+
+        if (!canUpdateTicket)
+            return UpdateTicketStatusResult.Forbidden;
+
+        if (!IsValidStatusTransition(ticket.Status, dto.Status))
+            return UpdateTicketStatusResult.InvalidTransition;
 
         ticket.Status = dto.Status;
 
         await _ticketRepository.UpdateAsync(ticket);
 
-        return true;
+        return UpdateTicketStatusResult.Success;
     }
 
     public async Task<bool> AssignTicketAsync(int ticketId, AssignTicketDto dto)
@@ -115,5 +147,21 @@ public class TicketService : ITicketService
         await _ticketRepository.UpdateAsync(ticket);
 
         return true;
+    }
+
+    private static bool IsValidStatusTransition(TicketStatus currentStatus, TicketStatus newStatus)
+    {
+        if (currentStatus == newStatus)
+            return true;
+
+        return currentStatus switch
+        {
+            TicketStatus.New => newStatus == TicketStatus.Assigned,
+            TicketStatus.Assigned => newStatus == TicketStatus.InProgress,
+            TicketStatus.InProgress => newStatus == TicketStatus.Resolved,
+            TicketStatus.Resolved => newStatus == TicketStatus.Closed,
+            TicketStatus.Closed => false,
+            _ => false
+        };
     }
 }

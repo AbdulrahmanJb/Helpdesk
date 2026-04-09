@@ -1,12 +1,10 @@
-﻿using Helpdesk.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Helpdesk.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Helpdesk.Application.DTOs
+namespace Helpdesk.Application.DTOs;
+
+public class UpdateTicketStatusDto
 {
-    public class UpdateTicketStatusDto
-    {
-        public TicketStatus Status { get; set; }
-    }
+    [EnumDataType(typeof(TicketStatus))]
+    public TicketStatus Status { get; set; }
 }

@@ -1,18 +1,18 @@
-﻿using Helpdesk.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Helpdesk.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Helpdesk.Application.DTOs
+namespace Helpdesk.Application.DTOs;
+
+public class CreateTicketDto
 {
-    public class CreateTicketDto
-    {
-        public string Title { get; set; } = string.Empty;
+    [Required]
+    [StringLength(100, MinimumLength = 3)]
+    public string Title { get; set; } = string.Empty;
 
-        public string Description { get; set; } = string.Empty;
+    [Required]
+    [StringLength(1000, MinimumLength = 10)]
+    public string Description { get; set; } = string.Empty;
 
-        public TicketPriority Priority { get; set; }
-
-        public int RequesterId { get; set; }
-    }
+    [EnumDataType(typeof(TicketPriority))]
+    public TicketPriority Priority { get; set; }
 }

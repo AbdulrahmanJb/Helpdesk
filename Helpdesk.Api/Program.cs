@@ -47,8 +47,10 @@ namespace Helpdesk.Api
 
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ICommentRepository, CommentRepository>();
             builder.Services.AddScoped<ITicketService, TicketService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<ICommentService, CommentService>();
 
             var jwtKey = builder.Configuration["Jwt:Key"]!;
 
@@ -63,7 +65,8 @@ namespace Helpdesk.Api
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
 

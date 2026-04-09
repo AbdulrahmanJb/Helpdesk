@@ -12,5 +12,5 @@ public class HelpdeskDbContext : DbContext
 
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<User> Users { get; set; }
-
+    public DbSet<Comment> Comments { get; set; }
 }
