@@ -3,6 +3,7 @@ using Helpdesk.Application.Interfaces;
 using Helpdesk.Application.Services;
 using Helpdesk.Domain.Entities;
 using Helpdesk.Domain.Enums;
+using Xunit;
 
 namespace Helpdesk.Tests;
 
