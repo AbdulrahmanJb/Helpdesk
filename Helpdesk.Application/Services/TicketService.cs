@@ -10,12 +10,14 @@ public class TicketService : ITicketService
     private readonly ITicketRepository _ticketRepository;
     private readonly IUserRepository _userRepository;
     private readonly IAuditTrailService _auditTrailService;
+    private readonly INotificationService _notificationService;
 
-    public TicketService(ITicketRepository ticketRepository, IUserRepository userRepository, IAuditTrailService auditTrailService)
+    public TicketService(ITicketRepository ticketRepository, IUserRepository userRepository, IAuditTrailService auditTrailService, INotificationService notificationService)
     {
         _ticketRepository = ticketRepository;
         _userRepository = userRepository;
         _auditTrailService = auditTrailService;
+        _notificationService = notificationService;
     }
 
     public async Task<TicketResponseDto> CreateTicketAsync(CreateTicketDto dto, int requesterId)
@@ -135,6 +137,11 @@ public class TicketService : ITicketService
             userId,
             "StatusChanged",
             $"Status changed from {previousStatus} to {ticket.Status}.");
+        await _notificationService.NotifyAsync(
+            ticket.RequesterId,
+            ticket.Id,
+            "Ticket status updated",
+            $"Ticket #{ticket.Id} moved from {previousStatus} to {ticket.Status}.");
 
         return UpdateTicketStatusResult.Success;
     }
@@ -163,6 +170,16 @@ public class TicketService : ITicketService
             actorId,
             "TicketAssigned",
             $"Ticket assigned to agent {dto.AgentId}.");
+        await _notificationService.NotifyAsync(
+            dto.AgentId,
+            ticket.Id,
+            "New ticket assigned",
+            $"Ticket #{ticket.Id} has been assigned to you.");
+        await _notificationService.NotifyAsync(
+            ticket.RequesterId,
+            ticket.Id,
+            "Ticket assigned",
+            $"Your ticket #{ticket.Id} has been assigned to an agent.");
 
         return true;
     }

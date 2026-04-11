@@ -10,12 +10,14 @@ public class CommentService : ICommentService
     private readonly ICommentRepository _commentRepository;
     private readonly ITicketRepository _ticketRepository;
     private readonly IAuditTrailService _auditTrailService;
+    private readonly INotificationService _notificationService;
 
-    public CommentService(ICommentRepository commentRepository, ITicketRepository ticketRepository, IAuditTrailService auditTrailService)
+    public CommentService(ICommentRepository commentRepository, ITicketRepository ticketRepository, IAuditTrailService auditTrailService, INotificationService notificationService)
     {
         _commentRepository = commentRepository;
         _ticketRepository = ticketRepository;
         _auditTrailService = auditTrailService;
+        _notificationService = notificationService;
     }
 
     public async Task<List<CommentResponseDto>?> GetTicketCommentsAsync(int ticketId, int userId, string role)
@@ -62,6 +64,7 @@ public class CommentService : ICommentService
             userId,
             "CommentAdded",
             dto.IsInternal ? "Internal comment added." : "Public comment added.");
+        await NotifyCommentRecipientsAsync(ticket, userId, dto.IsInternal);
 
         return new CreateCommentResponseDto
         {
@@ -79,6 +82,41 @@ public class CommentService : ICommentService
             nameof(UserRole.Requester) => ticket.RequesterId == userId,
             _ => false
         };
+    }
+
+    private async Task NotifyCommentRecipientsAsync(Ticket ticket, int actorId, bool isInternal)
+    {
+        if (isInternal)
+        {
+            if (ticket.AgentId.HasValue && ticket.AgentId.Value != actorId)
+            {
+                await _notificationService.NotifyAsync(
+                    ticket.AgentId.Value,
+                    ticket.Id,
+                    "Internal comment added",
+                    $"A new internal comment was added to ticket #{ticket.Id}.");
+            }
+
+            return;
+        }
+
+        if (ticket.RequesterId != actorId)
+        {
+            await _notificationService.NotifyAsync(
+                ticket.RequesterId,
+                ticket.Id,
+                "New comment on your ticket",
+                $"A new comment was added to ticket #{ticket.Id}.");
+        }
+
+        if (ticket.AgentId.HasValue && ticket.AgentId.Value != actorId)
+        {
+            await _notificationService.NotifyAsync(
+                ticket.AgentId.Value,
+                ticket.Id,
+                "New comment on assigned ticket",
+                $"A new comment was added to ticket #{ticket.Id}.");
+        }
     }
 
     private static CommentResponseDto MapComment(Comment comment)

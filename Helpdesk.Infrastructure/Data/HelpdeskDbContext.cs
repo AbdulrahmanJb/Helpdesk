@@ -14,4 +14,6 @@ public class HelpdeskDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<AuditTrailEntry> AuditTrailEntries { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
 }
