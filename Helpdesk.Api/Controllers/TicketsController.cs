@@ -1,4 +1,5 @@
-﻿using Helpdesk.Application.DTOs;
+using Helpdesk.Api.Extensions;
+using Helpdesk.Application.DTOs;
 using Helpdesk.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> GetAllTickets()
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to view tickets.");
 
         var tickets = await _ticketService.GetAllTicketsAsync(userId, role);
         return Ok(tickets);
@@ -32,12 +33,12 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> GetTicketById(int id)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to view the ticket.");
 
         var ticket = await _ticketService.GetTicketByIdAsync(id, userId, role);
 
         if (ticket == null)
-            return NotFound();
+            return this.ApiNotFound("Ticket not found.");
 
         return Ok(ticket);
     }
@@ -49,21 +50,11 @@ public class TicketsController : ControllerBase
         var requesterIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (!int.TryParse(requesterIdClaim, out var requesterId))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to create a ticket.");
 
         var ticket = await _ticketService.CreateTicketAsync(dto, requesterId);
 
         return CreatedAtAction(nameof(GetTicketById), new { id = ticket.Id }, ticket);
-    }
-
-    private bool TryGetCurrentUser(out int userId, out string role)
-    {
-        userId = 0;
-        role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        return int.TryParse(userIdClaim, out userId) && !string.IsNullOrWhiteSpace(role);
     }
 
     [Authorize(Roles = "Admin,Agent")]
@@ -71,18 +62,18 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> UpdateStatus(int id, UpdateTicketStatusDto dto)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to update ticket status.");
 
         var result = await _ticketService.UpdateTicketStatusAsync(id, dto, userId, role);
 
         if (result == UpdateTicketStatusResult.NotFound)
-            return NotFound();
+            return this.ApiNotFound("Ticket not found.");
 
         if (result == UpdateTicketStatusResult.Forbidden)
-            return Forbid();
+            return this.ApiForbidden("You are not allowed to update this ticket.");
 
         if (result == UpdateTicketStatusResult.InvalidTransition)
-            return BadRequest("Invalid ticket status transition.");
+            return this.ApiBadRequest("Invalid ticket status transition.");
 
         return NoContent();
     }
@@ -94,13 +85,23 @@ public class TicketsController : ControllerBase
         var actorIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (!int.TryParse(actorIdClaim, out var actorId))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to assign the ticket.");
 
         var assigned = await _ticketService.AssignTicketAsync(id, dto, actorId);
 
         if (!assigned)
-            return BadRequest("Ticket not found, agent not found, or selected user is not an agent.");
+            return this.ApiBadRequest("Unable to assign the ticket.", "Ticket not found, agent not found, or selected user is not an agent.");
 
         return NoContent();
+    }
+
+    private bool TryGetCurrentUser(out int userId, out string role)
+    {
+        userId = 0;
+        role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return int.TryParse(userIdClaim, out userId) && !string.IsNullOrWhiteSpace(role);
     }
 }

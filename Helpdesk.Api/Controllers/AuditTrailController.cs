@@ -1,3 +1,4 @@
+using Helpdesk.Api.Extensions;
 using Helpdesk.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +22,12 @@ public class AuditTrailController : ControllerBase
     public async Task<IActionResult> GetAuditTrail(int ticketId)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to view audit trail.");
 
         var entries = await _auditTrailService.GetTicketAuditTrailAsync(ticketId, userId, role);
 
         if (entries == null)
-            return NotFound();
+            return this.ApiNotFound("Audit trail not found for the ticket.");
 
         return Ok(entries);
     }

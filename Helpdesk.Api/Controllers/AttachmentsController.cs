@@ -1,3 +1,4 @@
+using Helpdesk.Api.Extensions;
 using Helpdesk.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +22,12 @@ public class AttachmentsController : ControllerBase
     public async Task<IActionResult> GetAttachments(int ticketId)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to view attachments.");
 
         var attachments = await _attachmentService.GetTicketAttachmentsAsync(ticketId, userId, role);
 
         if (attachments == null)
-            return NotFound();
+            return this.ApiNotFound("Ticket or attachments not found.");
 
         return Ok(attachments);
     }
@@ -36,16 +37,16 @@ public class AttachmentsController : ControllerBase
     public async Task<IActionResult> UploadAttachment(int ticketId, IFormFile file)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to upload attachments.");
 
         if (file == null || file.Length == 0)
-            return BadRequest("A non-empty file is required.");
+            return this.ApiBadRequest("A non-empty file is required.");
 
         await using var stream = file.OpenReadStream();
         var attachment = await _attachmentService.UploadAsync(ticketId, userId, role, file.FileName, file.ContentType, stream, file.Length);
 
         if (attachment == null)
-            return NotFound();
+            return this.ApiNotFound("Ticket not found.");
 
         return CreatedAtAction(nameof(GetAttachments), new { ticketId }, attachment);
     }
@@ -54,12 +55,12 @@ public class AttachmentsController : ControllerBase
     public async Task<IActionResult> DownloadAttachment(int ticketId, int attachmentId)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to download attachments.");
 
         var attachment = await _attachmentService.DownloadAsync(attachmentId, userId, role);
 
         if (attachment == null)
-            return NotFound();
+            return this.ApiNotFound("Attachment not found.");
 
         return File(attachment.Content, attachment.ContentType, attachment.FileName);
     }
@@ -68,12 +69,12 @@ public class AttachmentsController : ControllerBase
     public async Task<IActionResult> DeleteAttachment(int ticketId, int attachmentId)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to delete attachments.");
 
         var deleted = await _attachmentService.DeleteAsync(attachmentId, userId, role);
 
         if (!deleted)
-            return NotFound();
+            return this.ApiNotFound("Attachment not found.");
 
         return NoContent();
     }

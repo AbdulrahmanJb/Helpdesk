@@ -113,6 +113,36 @@ public class TicketServiceTests
     }
 
     [Fact]
+    public async Task AssignTicketAsync_CreatesNotificationsForAgentAndRequester()
+    {
+        var service = CreateService(out var ticketRepository, out var userRepository, out var auditTrailService, out var notificationService);
+        ticketRepository.Tickets.Add(new Ticket
+        {
+            Id = 8,
+            Title = "Mouse issue",
+            Description = "Ticket ready for assignment notifications.",
+            RequesterId = 2,
+            Status = TicketStatus.New
+        });
+        userRepository.Users.Add(new User
+        {
+            Id = 3,
+            FullName = "Agent User",
+            Email = "agent@test.com",
+            PasswordHash = "hash",
+            Role = UserRole.Agent
+        });
+
+        var result = await service.AssignTicketAsync(8, new AssignTicketDto { AgentId = 3 }, actorId: 1);
+
+        Assert.True(result);
+        Assert.Single(auditTrailService.Entries);
+        Assert.Equal(2, notificationService.Notifications.Count);
+        Assert.Contains(notificationService.Notifications, notification => notification.UserId == 3);
+        Assert.Contains(notificationService.Notifications, notification => notification.UserId == 2);
+    }
+
+    [Fact]
     public async Task UpdateTicketStatusAsync_RejectsAgentWhoDoesNotOwnTicket()
     {
         var service = CreateService(out var ticketRepository, out _, out _, out _);
@@ -174,18 +204,21 @@ public class TicketServiceTests
 
     private sealed class FakeUserRepository : IUserRepository
     {
+        public List<User> Users { get; } = [];
+
         public Task<User?> GetByEmailAsync(string email)
         {
-            return Task.FromResult<User?>(null);
+            return Task.FromResult(Users.FirstOrDefault(user => user.Email == email));
         }
 
         public Task<User?> GetByIdAsync(int id)
         {
-            return Task.FromResult<User?>(null);
+            return Task.FromResult(Users.FirstOrDefault(user => user.Id == id));
         }
 
         public Task<User> CreateAsync(User user)
         {
+            Users.Add(user);
             return Task.FromResult(user);
         }
     }

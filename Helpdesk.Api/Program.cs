@@ -1,11 +1,13 @@
 using System.Text;
 using Helpdesk.Api.Extensions;
+using Helpdesk.Api.Models;
 using Helpdesk.Application.Interfaces;
 using Helpdesk.Application.Services;
 using Helpdesk.Infrastructure.Data;
 using Helpdesk.Infrastructure.Repositories;
 using Helpdesk.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -19,6 +21,27 @@ namespace Helpdesk.Api
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(entry => entry.Value?.Errors.Count > 0)
+                        .SelectMany(entry => entry.Value!.Errors.Select(error =>
+                            $"{entry.Key}: {(string.IsNullOrWhiteSpace(error.ErrorMessage) ? "Invalid value." : error.ErrorMessage)}"))
+                        .ToList();
+
+                    var response = new ApiErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "Validation failed.",
+                        Detail = string.Join(" | ", errors),
+                        TraceId = context.HttpContext.TraceIdentifier
+                    };
+
+                    return new BadRequestObjectResult(response);
+                };
+            });
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(options =>

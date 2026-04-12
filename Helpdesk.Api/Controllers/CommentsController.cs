@@ -1,3 +1,4 @@
+using Helpdesk.Api.Extensions;
 using Helpdesk.Application.DTOs;
 using Helpdesk.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -22,12 +23,12 @@ public class CommentsController : ControllerBase
     public async Task<IActionResult> GetComments(int ticketId)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to view comments.");
 
         var comments = await _commentService.GetTicketCommentsAsync(ticketId, userId, role);
 
         if (comments == null)
-            return NotFound();
+            return this.ApiNotFound("Ticket or comments not found.");
 
         return Ok(comments);
     }
@@ -36,15 +37,15 @@ public class CommentsController : ControllerBase
     public async Task<IActionResult> CreateComment(int ticketId, CreateCommentDto dto)
     {
         if (!TryGetCurrentUser(out var userId, out var role))
-            return Unauthorized();
+            return this.ApiUnauthorized("Authentication is required to add a comment.");
 
         var result = await _commentService.CreateCommentAsync(ticketId, dto, userId, role);
 
         if (result.Result == CreateCommentResult.NotFound)
-            return NotFound();
+            return this.ApiNotFound("Ticket not found.");
 
         if (result.Result == CreateCommentResult.Forbidden)
-            return Forbid();
+            return this.ApiForbidden("You are not allowed to add this comment.");
 
         return CreatedAtAction(nameof(GetComments), new { ticketId }, result.Comment);
     }

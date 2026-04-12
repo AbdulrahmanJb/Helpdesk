@@ -1,4 +1,5 @@
-﻿using Helpdesk.Application.DTOs;
+using Helpdesk.Api.Extensions;
+using Helpdesk.Application.DTOs;
 using Helpdesk.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +22,7 @@ public class AuthController : ControllerBase
         var result = await _authService.LoginAsync(dto);
 
         if (result == null)
-            return Unauthorized(new { message = "Invalid email or password" });
+            return this.ApiUnauthorized("Invalid email or password.");
 
         return Ok(result);
     }
