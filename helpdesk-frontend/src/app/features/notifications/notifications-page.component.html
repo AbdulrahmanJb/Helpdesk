@@ -1,0 +1,68 @@
+<section class="notifications-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Notifications</p>
+      <h1>Stay on top of changes</h1>
+      <p class="subtitle">Signed in as {{ email }} ({{ role }})</p>
+      <p class="subtitle unread-copy">Unread: {{ unreadCount() }}</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/tickets" class="secondary-link">Tickets</a>
+      <a routerLink="/dashboard" class="secondary-link">Dashboard</a>
+      <button type="button" class="ghost-button" (click)="reload()">Refresh</button>
+      <button type="button" class="ghost-button" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="state-card">
+      <p>Loading notifications...</p>
+    </section>
+  } @else if (errorMessage()) {
+    <section class="state-card error-card">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="primary-button" (click)="reload()">Try Again</button>
+    </section>
+  } @else if (notifications().length === 0) {
+    <section class="state-card">
+      <h2>No notifications yet</h2>
+      <p>When tickets are assigned, updated, or commented on, they'll show up here.</p>
+    </section>
+  } @else {
+    <section class="notification-list">
+      @for (notification of notifications(); track notification.id) {
+        <article class="notification-card" [class.notification-card--read]="notification.isRead">
+          <div class="notification-top">
+            <div>
+              <p class="notification-badge">
+                @if (notification.isRead) { Read } @else { New }
+              </p>
+              <h2>{{ notification.title }}</h2>
+            </div>
+            <span>{{ notification.createdAt | date: 'medium' }}</span>
+          </div>
+
+          <p class="message">{{ notification.message }}</p>
+
+          <div class="notification-actions">
+            @if (notification.ticketId) {
+              <a [routerLink]="['/tickets', notification.ticketId]" class="primary-link">Open Ticket</a>
+            }
+
+            @if (!notification.isRead) {
+              <button
+                type="button"
+                class="ghost-button"
+                (click)="markAsRead(notification.id)"
+                [disabled]="isBusy(notification.id)"
+              >
+                {{ isBusy(notification.id) ? 'Saving...' : 'Mark as Read' }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </section>
+  }
+</section>

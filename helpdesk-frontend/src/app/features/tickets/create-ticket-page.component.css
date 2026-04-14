@@ -1,0 +1,134 @@
+.create-ticket-page {
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem 4rem;
+  background:
+    radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 28%),
+    linear-gradient(180deg, #f7fbfa 0%, #edf5f3 100%);
+  color: #14302c;
+}
+
+.page-header {
+  max-width: 920px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  color: #4f6f69;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.subtitle {
+  margin: 0.5rem 0 0;
+  color: #4f6f69;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.secondary-link,
+.cancel-link,
+.primary-button {
+  border-radius: 999px;
+  padding: 0.8rem 1.2rem;
+  font: inherit;
+  text-decoration: none;
+}
+
+.secondary-link,
+.cancel-link {
+  border: 1px solid #b9d0cb;
+  background: #ffffff;
+  color: #15302d;
+}
+
+.form-card {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.75rem;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(117, 150, 143, 0.24);
+  box-shadow: 0 24px 50px rgba(36, 74, 69, 0.09);
+}
+
+form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field span {
+  font-weight: 700;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #bfd4cf;
+  border-radius: 18px;
+  padding: 0.95rem 1rem;
+  font: inherit;
+  color: #14302c;
+  background: #fbfdfc;
+}
+
+textarea {
+  resize: vertical;
+}
+
+small {
+  color: #9f1c1c;
+}
+
+.error-message {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  background: #fff1f1;
+  color: #9f1c1c;
+}
+
+.actions {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.primary-button {
+  border: none;
+  cursor: pointer;
+  background: #14302c;
+  color: #ffffff;
+}
+
+.primary-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+  }
+}

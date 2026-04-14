@@ -1,0 +1,238 @@
+<section class="ticket-detail-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Ticket Details</p>
+      <h1>{{ ticket()?.title ?? 'Loading ticket...' }}</h1>
+      <p class="subtitle">Signed in as {{ email }} ({{ role }})</p>
+      <p class="subtitle">Keep the conversation, files, and workflow updates together in one place.</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/tickets" class="secondary-link">Back to Tickets</a>
+      <a routerLink="/notifications" class="secondary-link">
+        Notifications
+        @if (unreadCount() > 0) {
+          <span class="count-pill">{{ unreadCount() }}</span>
+        }
+      </a>
+      <button type="button" class="ghost-button" (click)="reload()">Refresh</button>
+      <button type="button" class="ghost-button" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="state-card">
+      <p>Loading ticket details...</p>
+    </section>
+  } @else if (errorMessage()) {
+    <section class="state-card error-card">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="primary-button" (click)="reload()">Try Again</button>
+    </section>
+  } @else if (ticket(); as currentTicket) {
+    <section class="detail-grid">
+      <article class="summary-card">
+        <div class="summary-top">
+          <div>
+            <p class="ticket-meta">Ticket #{{ currentTicket.id }}</p>
+            <h2>{{ currentTicket.title }}</h2>
+          </div>
+          <span class="badge">{{ getStatusLabel(currentTicket.status) }}</span>
+        </div>
+
+        <p class="description">{{ currentTicket.description }}</p>
+
+        <dl class="summary-details">
+          <div>
+            <dt>Priority</dt>
+            <dd>{{ getPriorityLabel(currentTicket.priority) }}</dd>
+          </div>
+          <div>
+            <dt>Requester</dt>
+            <dd>{{ currentTicket.requesterId }}</dd>
+          </div>
+          <div>
+            <dt>Agent</dt>
+            <dd>{{ currentTicket.agentId ?? 'Unassigned' }}</dd>
+          </div>
+          <div>
+            <dt>Created</dt>
+            <dd>{{ currentTicket.createdAt | date: 'medium' }}</dd>
+          </div>
+        </dl>
+
+        @if (canUpdateStatus || canAssignTicket) {
+          <div class="summary-actions-grid">
+            @if (canUpdateStatus) {
+              <form class="panel-form summary-form" [formGroup]="statusForm" (ngSubmit)="submitStatusUpdate()" novalidate>
+                <div class="panel-header compact-header">
+                  <h3>Update Status</h3>
+                </div>
+
+                <label class="form-field">
+                  <span>Next status</span>
+                  <select formControlName="status">
+                    <option [ngValue]="1">Assigned</option>
+                    <option [ngValue]="2">In Progress</option>
+                    <option [ngValue]="3">Resolved</option>
+                    <option [ngValue]="4">Closed</option>
+                  </select>
+                </label>
+
+                <div class="form-actions">
+                  <button type="submit" class="primary-button" [disabled]="isSubmittingStatus()">
+                    {{ isSubmittingStatus() ? 'Saving...' : 'Update Status' }}
+                  </button>
+                </div>
+              </form>
+            }
+
+            @if (canAssignTicket) {
+              <form class="panel-form summary-form" [formGroup]="assignmentForm" (ngSubmit)="submitAssignment()" novalidate>
+                <div class="panel-header compact-header">
+                  <h3>Assign Ticket</h3>
+                </div>
+
+                <label class="form-field">
+                  <span>Agent ID</span>
+                  <input type="number" formControlName="agentId" min="1" placeholder="3" />
+                </label>
+
+                <div class="form-actions">
+                  <button type="submit" class="primary-button" [disabled]="isSubmittingAssignment()">
+                    {{ isSubmittingAssignment() ? 'Assigning...' : 'Assign Ticket' }}
+                  </button>
+                </div>
+              </form>
+            }
+          </div>
+        }
+
+        @if (actionErrorMessage()) {
+          <p class="inline-error action-error">{{ actionErrorMessage() }}</p>
+        }
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <h3>Comments</h3>
+          <span>{{ comments().length }}</span>
+        </div>
+
+        <form class="panel-form" [formGroup]="commentForm" (ngSubmit)="submitComment()" novalidate>
+          <label class="form-field">
+            <span>Add comment</span>
+            <textarea
+              formControlName="content"
+              rows="4"
+              placeholder="Share an update about this ticket."
+            ></textarea>
+          </label>
+
+          @if (canCreateInternalComment) {
+            <label class="checkbox-field">
+              <input type="checkbox" formControlName="isInternal" />
+              <span>Internal comment</span>
+            </label>
+          }
+
+          @if (commentErrorMessage()) {
+            <p class="inline-error">{{ commentErrorMessage() }}</p>
+          }
+
+          <div class="form-actions">
+            <button type="submit" class="primary-button" [disabled]="isSubmittingComment()">
+              {{ isSubmittingComment() ? 'Posting...' : 'Post Comment' }}
+            </button>
+          </div>
+        </form>
+
+        @if (comments().length === 0) {
+          <p class="empty-text">No comments yet.</p>
+        } @else {
+          <div class="stack-list">
+            @for (comment of comments(); track comment.id) {
+              <article class="stack-item">
+                <div class="stack-item__top">
+                  <strong>Author #{{ comment.authorId }}</strong>
+                  <span>{{ comment.createdAt | date: 'medium' }}</span>
+                </div>
+                <p>{{ comment.content }}</p>
+                <small>@if (comment.isInternal) { Internal comment } @else { Public comment }</small>
+              </article>
+            }
+          </div>
+        }
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <h3>Recent Activity</h3>
+          <span>{{ auditTrail().length }}</span>
+        </div>
+
+        @if (auditTrail().length === 0) {
+          <p class="empty-text">No audit entries yet.</p>
+        } @else {
+          <div class="stack-list">
+            @for (entry of auditTrail(); track entry.id) {
+              <article class="stack-item">
+                <div class="stack-item__top">
+                  <strong>{{ entry.action }}</strong>
+                  <span>{{ entry.createdAt | date: 'medium' }}</span>
+                </div>
+                <p>{{ entry.description }}</p>
+                <small>Actor #{{ entry.actorId }}</small>
+              </article>
+            }
+          </div>
+        }
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <h3>Attachments</h3>
+          <span>{{ attachments().length }}</span>
+        </div>
+
+        <div class="panel-form">
+          <label class="form-field">
+            <span>Upload attachment</span>
+            <input #fileInput type="file" (change)="onFileSelected($event)" />
+          </label>
+
+          @if (selectedFileName()) {
+            <p class="selected-file">Selected: {{ selectedFileName() }}</p>
+          }
+
+          @if (attachmentErrorMessage()) {
+            <p class="inline-error">{{ attachmentErrorMessage() }}</p>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="primary-button" (click)="uploadAttachment(fileInput)" [disabled]="isUploadingAttachment()">
+              {{ isUploadingAttachment() ? 'Uploading...' : 'Upload File' }}
+            </button>
+          </div>
+        </div>
+
+        @if (attachments().length === 0) {
+          <p class="empty-text">No attachments yet.</p>
+        } @else {
+          <div class="stack-list">
+            @for (attachment of attachments(); track attachment.id) {
+              <article class="stack-item">
+                <div class="stack-item__top">
+                  <strong>{{ attachment.originalFileName }}</strong>
+                  <span>{{ attachment.createdAt | date: 'medium' }}</span>
+                </div>
+                <p>{{ attachment.contentType }}</p>
+                <small>{{ attachment.fileSize }} bytes uploaded by user #{{ attachment.uploadedByUserId }}</small>
+              </article>
+            }
+          </div>
+        }
+      </article>
+    </section>
+  }
+</section>

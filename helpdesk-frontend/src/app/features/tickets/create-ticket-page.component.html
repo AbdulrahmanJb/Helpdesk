@@ -1,0 +1,59 @@
+<section class="create-ticket-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">New Ticket</p>
+      <h1>Create a helpdesk request</h1>
+      <p class="subtitle">Signed in as {{ email }} ({{ role }})</p>
+      <p class="subtitle">Share the problem clearly so the right person can pick it up quickly.</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/tickets" class="secondary-link">Back to Tickets</a>
+      <a routerLink="/dashboard" class="secondary-link">Dashboard</a>
+    </div>
+  </header>
+
+  <section class="form-card">
+    <form [formGroup]="ticketForm" (ngSubmit)="submit()" novalidate>
+      <label class="field">
+        <span>Title</span>
+        <input type="text" formControlName="title" placeholder="Printer not working" />
+        @if (ticketForm.controls.title.touched && ticketForm.controls.title.invalid) {
+          <small>Title must be between 3 and 100 characters.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea
+          formControlName="description"
+          rows="6"
+          placeholder="Describe the issue, what you expected, and what is happening instead."
+        ></textarea>
+        @if (ticketForm.controls.description.touched && ticketForm.controls.description.invalid) {
+          <small>Description must be between 10 and 1000 characters.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Priority</span>
+        <select formControlName="priority">
+          <option [ngValue]="0">Low</option>
+          <option [ngValue]="1">Medium</option>
+          <option [ngValue]="2">High</option>
+        </select>
+      </label>
+
+      @if (errorMessage()) {
+        <p class="error-message">{{ errorMessage() }}</p>
+      }
+
+      <div class="actions">
+        <button type="submit" class="primary-button" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Creating...' : 'Create Ticket' }}
+        </button>
+        <a routerLink="/tickets" class="cancel-link">Back to Tickets</a>
+      </div>
+    </form>
+  </section>
+</section>

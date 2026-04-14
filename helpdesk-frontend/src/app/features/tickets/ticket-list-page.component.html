@@ -1,0 +1,80 @@
+<section class="tickets-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Ticket Workspace</p>
+      <h1>Your tickets</h1>
+      <p class="subtitle">Signed in as {{ email }} ({{ role }})</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/tickets/new" class="primary-link">New Ticket</a>
+      <a routerLink="/notifications" class="secondary-link">
+        Notifications
+        @if (unreadCount() > 0) {
+          <span class="count-pill">{{ unreadCount() }}</span>
+        }
+      </a>
+      <a routerLink="/dashboard" class="secondary-link">Dashboard</a>
+      <button type="button" class="ghost-button" (click)="reload()">Refresh</button>
+      <button type="button" class="ghost-button" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="state-card">
+      <p>Loading tickets...</p>
+    </section>
+  } @else if (errorMessage()) {
+    <section class="state-card error-card">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="primary-button" (click)="reload()">Try Again</button>
+    </section>
+  } @else if (tickets().length === 0) {
+    <section class="state-card">
+      <h2>No tickets yet</h2>
+      <p>Your workspace is empty right now. Create the first ticket to get the workflow started.</p>
+      <div class="empty-actions">
+        <a routerLink="/tickets/new" class="primary-link">Create Ticket</a>
+      </div>
+    </section>
+  } @else {
+    <section class="ticket-grid">
+      @for (ticket of tickets(); track ticket.id) {
+        <article class="ticket-card">
+          <div class="ticket-card__top">
+            <div>
+              <p class="ticket-meta">Ticket #{{ ticket.id }}</p>
+              <h2>{{ ticket.title }}</h2>
+            </div>
+            <span class="badge">{{ getStatusLabel(ticket.status) }}</span>
+          </div>
+
+          <p class="description">{{ ticket.description }}</p>
+
+          <dl class="ticket-details">
+            <div>
+              <dt>Priority</dt>
+              <dd>{{ getPriorityLabel(ticket.priority) }}</dd>
+            </div>
+            <div>
+              <dt>Requester</dt>
+              <dd>{{ ticket.requesterId }}</dd>
+            </div>
+            <div>
+              <dt>Agent</dt>
+              <dd>{{ ticket.agentId ?? 'Unassigned' }}</dd>
+            </div>
+            <div>
+              <dt>Created</dt>
+              <dd>{{ ticket.createdAt | date: 'medium' }}</dd>
+            </div>
+          </dl>
+
+          <div class="card-actions">
+            <a [routerLink]="['/tickets', ticket.id]" class="primary-link">Open Ticket</a>
+          </div>
+        </article>
+      }
+    </section>
+  }
+</section>

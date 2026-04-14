@@ -1,0 +1,49 @@
+<main class="login-shell">
+  <section class="login-card">
+    <div class="brand-block">
+      <p class="eyebrow">Helpdesk System</p>
+      <h1>Sign in to continue</h1>
+      <p class="support-copy">
+        Use your requester, agent, or admin account to access the ticketing system.
+      </p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-form">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="admin@helpdesk.com" />
+      </label>
+
+      <p class="field-error" *ngIf="loginForm.controls.email.touched && loginForm.controls.email.invalid">
+        Enter a valid email address.
+      </p>
+
+      <label class="field">
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="123456" />
+      </label>
+
+      <p
+        class="field-error"
+        *ngIf="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+      >
+        Password must be at least 6 characters.
+      </p>
+
+      <p class="submit-error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+
+      <button type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+
+    <div class="hint-card">
+      <p>Quick test accounts:</p>
+      <ul>
+        <li>Admin: `admin@helpdesk.com` / `123456`</li>
+        <li>Requester: `requester@test.com` / `123456`</li>
+        <li>Agent: `agent@test.com` / `123456`</li>
+      </ul>
+    </div>
+  </section>
+</main>

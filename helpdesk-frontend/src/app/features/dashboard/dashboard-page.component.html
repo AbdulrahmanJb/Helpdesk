@@ -1,0 +1,131 @@
+<main class="dashboard-shell">
+  <section class="hero-card">
+    <div class="hero-top">
+      <div class="identity-block">
+        <p class="eyebrow">Operations Hub</p>
+        <div class="identity-row">
+          <h1>Helpdesk Command Center</h1>
+          <div class="identity-chip">
+            <span class="identity-name">{{ getDisplayName() }}</span>
+            <span class="identity-role">{{ role }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <button type="button" class="primary-button" (click)="goToTickets()">Open Workspace</button>
+        <a routerLink="/tickets/new" class="secondary-link">New Ticket</a>
+        <button type="button" class="secondary-button" (click)="reload()">Refresh</button>
+        <button type="button" class="ghost-button" (click)="logout()">Logout</button>
+      </div>
+    </div>
+
+    <p class="support-copy">
+      Keep an eye on ticket volume, unread updates, and the latest work happening across your queue.
+    </p>
+  </section>
+
+  @if (isLoading()) {
+    <section class="state-card">
+      <p>Loading dashboard...</p>
+    </section>
+  } @else if (errorMessage()) {
+    <section class="state-card error-card">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="primary-button" (click)="reload()">Try Again</button>
+    </section>
+  } @else {
+    <section class="dashboard-grid">
+      <article class="metric-card metric-card--primary">
+        <p class="metric-label">Open Tickets</p>
+        <h2>{{ getOpenTicketCount() }}</h2>
+        <p>Tickets that still need work or follow-up.</p>
+      </article>
+
+      <article class="metric-card">
+        <p class="metric-label">Assigned</p>
+        <h2>{{ getAssignedTicketCount() }}</h2>
+        <p>Tickets that already have an owner.</p>
+      </article>
+
+      <article class="metric-card">
+        <p class="metric-label">Resolved / Closed</p>
+        <h2>{{ getResolvedTicketCount() }}</h2>
+        <p>Tickets that have reached an end state.</p>
+      </article>
+
+      <article class="metric-card">
+        <p class="metric-label">Unread Updates</p>
+        <h2>{{ unreadCount() }}</h2>
+        <p>Notifications waiting for your attention.</p>
+      </article>
+
+      <article class="panel-card panel-card--workspace">
+        <div class="panel-header">
+          <div>
+            <p class="panel-eyebrow">Queue Overview</p>
+            <h3>Recent Tickets</h3>
+          </div>
+          <a routerLink="/tickets" class="panel-link">View all tickets</a>
+        </div>
+
+        @if (getRecentTickets().length === 0) {
+          <p class="empty-text">No tickets yet. Create the first one to start the workflow.</p>
+        } @else {
+          <div class="stack-list">
+            @for (ticket of getRecentTickets(); track ticket.id) {
+              <a class="stack-link" [routerLink]="['/tickets', ticket.id]">
+                <article class="stack-item">
+                  <div class="stack-item__top">
+                    <div>
+                      <p class="stack-item__meta">Ticket #{{ ticket.id }}</p>
+                      <h4>{{ ticket.title }}</h4>
+                    </div>
+                    <span class="badge">{{ getStatusLabel(ticket.status) }}</span>
+                  </div>
+                  <p>{{ ticket.description }}</p>
+                </article>
+              </a>
+            }
+          </div>
+        }
+      </article>
+
+      <article class="panel-card panel-card--notifications">
+        <div class="panel-header">
+          <div>
+            <p class="panel-eyebrow">Alerts</p>
+            <h3>Recent Notifications</h3>
+          </div>
+          <a routerLink="/notifications" class="panel-link">Open notifications</a>
+        </div>
+
+        @if (getRecentNotifications().length === 0) {
+          <p class="empty-text">No notifications yet.</p>
+        } @else {
+          <div class="stack-list">
+            @for (notification of getRecentNotifications(); track notification.id) {
+              <a
+                class="stack-link"
+                [routerLink]="notification.ticketId ? ['/tickets', notification.ticketId] : ['/notifications']"
+              >
+                <article class="stack-item" [class.stack-item--unread]="!notification.isRead">
+                  <div class="stack-item__top">
+                    <div>
+                      <p class="stack-item__meta">
+                        @if (notification.isRead) { Read } @else { Unread }
+                      </p>
+                      <h4>{{ notification.title }}</h4>
+                    </div>
+                    <span>{{ notification.createdAt | date: 'short' }}</span>
+                  </div>
+                  <p>{{ notification.message }}</p>
+                </article>
+              </a>
+            }
+          </div>
+        }
+      </article>
+    </section>
+  }
+</main>
