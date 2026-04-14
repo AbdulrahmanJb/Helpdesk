@@ -154,7 +154,7 @@
             @for (comment of comments(); track comment.id) {
               <article class="stack-item">
                 <div class="stack-item__top">
-                  <strong>Author #{{ comment.authorId }}</strong>
+                  <strong>Posted by user #{{ comment.authorId }}</strong>
                   <span>{{ comment.createdAt | date: 'medium' }}</span>
                 </div>
                 <p>{{ comment.content }}</p>

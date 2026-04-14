@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { NotificationItem, NotificationService } from './notification.service';
@@ -13,6 +13,7 @@ import { NotificationItem, NotificationService } from './notification.service';
 })
 export class NotificationsPageComponent {
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
 
@@ -20,11 +21,20 @@ export class NotificationsPageComponent {
   protected readonly isLoading = signal(true);
   protected readonly errorMessage = signal('');
   protected readonly busyNotificationIds = signal<number[]>([]);
+  protected readonly activeFilter = signal<'all' | 'unread' | 'read'>('all');
   protected readonly email = this.authService.getEmail();
   protected readonly role = this.authService.getRole();
   protected readonly unreadCount = this.notificationService.unreadCount;
 
   constructor() {
+    this.route.queryParamMap.subscribe((params) => {
+      const filter = params.get('filter');
+      if (filter === 'unread' || filter === 'read') {
+        this.activeFilter.set(filter);
+      } else {
+        this.activeFilter.set('all');
+      }
+    });
     this.loadNotifications();
   }
 
@@ -39,6 +49,26 @@ export class NotificationsPageComponent {
 
   protected isBusy(notificationId: number): boolean {
     return this.busyNotificationIds().includes(notificationId);
+  }
+
+  protected setFilter(filter: 'all' | 'unread' | 'read'): void {
+    this.activeFilter.set(filter);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: filter === 'all' ? {} : { filter },
+      queryParamsHandling: ''
+    });
+  }
+
+  protected getFilteredNotifications(): NotificationItem[] {
+    switch (this.activeFilter()) {
+      case 'unread':
+        return this.notifications().filter((notification) => !notification.isRead);
+      case 'read':
+        return this.notifications().filter((notification) => notification.isRead);
+      default:
+        return this.notifications();
+    }
   }
 
   protected markAsRead(notificationId: number): void {

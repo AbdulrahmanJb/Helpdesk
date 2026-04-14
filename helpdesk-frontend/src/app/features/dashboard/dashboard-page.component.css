@@ -22,29 +22,11 @@
 }
 
 .hero-card {
-  max-width: 1180px;
+  max-width: 1320px;
   margin: 0 auto 1.25rem;
   padding: 2rem;
   display: grid;
   gap: 1rem;
-}
-
-.hero-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.identity-block {
-  min-width: 0;
-}
-
-.identity-row {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 .eyebrow,
@@ -79,34 +61,33 @@ h1 {
   line-height: 1.7;
 }
 
-.hero-actions {
+.hero-summary {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  margin-top: 1rem;
 }
 
-.identity-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 999px;
-  background: #f3faf7;
-  border: 1px solid #d5e8e2;
+.hero-summary__item {
+  min-width: 180px;
+  padding: 1rem 1.1rem;
+  border-radius: 20px;
+  background: #f7fbfa;
+  border: 1px solid #dce8e4;
 }
 
-.identity-name {
-  font-weight: 700;
-  color: #17322f;
+.hero-summary__item strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.15rem;
+  color: #14302c;
 }
 
-.identity-role {
-  padding: 0.3rem 0.55rem;
-  border-radius: 999px;
-  background: #15302d;
-  color: #ffffff;
-  font-size: 0.82rem;
+.hero-summary__label {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4d6b66;
   font-weight: 700;
 }
 
@@ -157,7 +138,7 @@ h1 {
 }
 
 .dashboard-grid {
-  max-width: 1180px;
+  max-width: 1320px;
   margin: 0 auto;
   display: grid;
   gap: 1rem;
@@ -167,6 +148,11 @@ h1 {
 .metric-card {
   grid-column: span 3;
   padding: 1.35rem;
+}
+
+.metric-link {
+  grid-column: span 3;
+  text-decoration: none;
 }
 
 .metric-card--primary {
@@ -189,6 +175,11 @@ h1 {
   margin: 0;
   color: #4f6f69;
   line-height: 1.55;
+}
+
+.metric-link:hover .metric-card {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.09);
 }
 
 .panel-card {
@@ -214,6 +205,12 @@ h1 {
 
 .panel-header {
   margin-bottom: 1rem;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .panel-link {
@@ -279,14 +276,11 @@ h1 {
 }
 
 @media (max-width: 1080px) {
-  .hero-top,
-  .hero-actions {
-    justify-content: flex-start;
-    flex-direction: column;
-    align-items: flex-start;
+  .metric-card {
+    grid-column: span 6;
   }
 
-  .metric-card {
+  .metric-link {
     grid-column: span 6;
   }
 
@@ -302,7 +296,15 @@ h1 {
     padding: 18px;
   }
 
+  .hero-summary__item {
+    min-width: 100%;
+  }
+
   .metric-card {
+    grid-column: span 12;
+  }
+
+  .metric-link {
     grid-column: span 12;
   }
 

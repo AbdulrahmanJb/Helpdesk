@@ -41,6 +41,14 @@ h1 {
   flex-wrap: wrap;
 }
 
+.filter-row {
+  max-width: 1100px;
+  margin: 0 auto 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .secondary-link,
 .primary-link,
 .ghost-button,
@@ -102,6 +110,23 @@ h1 {
   background: #15302d;
   color: #ffffff;
   font-size: 0.78rem;
+}
+
+.filter-chip {
+  border: 1px solid #bfd4cf;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  background: #ffffff;
+  color: #17322f;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-chip--active {
+  background: #14302c;
+  color: #ffffff;
+  border-color: #14302c;
 }
 
 .ticket-grid {

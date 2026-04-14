@@ -1,1 +1,35 @@
-<router-outlet />
+@if (showSidebar()) {
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <p class="sidebar__eyebrow">Helpdesk</p>
+        <h1>Operations Hub</h1>
+      </div>
+
+      <div class="sidebar__identity">
+        <span class="sidebar__name">{{ getDisplayName() }}</span>
+        <span class="sidebar__role">{{ getCurrentRole() }}</span>
+      </div>
+
+      <nav class="sidebar__nav">
+        <a routerLink="/dashboard" routerLinkActive="is-active" class="nav-link">Dashboard</a>
+        <a routerLink="/tickets" routerLinkActive="is-active" class="nav-link">Tickets</a>
+        <a routerLink="/tickets/new" routerLinkActive="is-active" class="nav-link">New Ticket</a>
+        <a routerLink="/notifications" routerLinkActive="is-active" class="nav-link nav-link--badge">
+          <span>Notifications</span>
+          @if (unreadCount() > 0) {
+            <span class="nav-badge">{{ unreadCount() }}</span>
+          }
+        </a>
+      </nav>
+
+      <button type="button" class="sidebar__logout" (click)="logout()">Logout</button>
+    </aside>
+
+    <main class="app-content">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
+  <router-outlet />
+}

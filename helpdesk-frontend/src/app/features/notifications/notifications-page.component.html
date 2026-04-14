@@ -30,8 +30,26 @@
       <p>When tickets are assigned, updated, or commented on, they'll show up here.</p>
     </section>
   } @else {
+    <section class="filter-row">
+      <button type="button" class="filter-chip" [class.filter-chip--active]="activeFilter() === 'all'" (click)="setFilter('all')">
+        All
+      </button>
+      <button type="button" class="filter-chip" [class.filter-chip--active]="activeFilter() === 'unread'" (click)="setFilter('unread')">
+        Unread
+      </button>
+      <button type="button" class="filter-chip" [class.filter-chip--active]="activeFilter() === 'read'" (click)="setFilter('read')">
+        Read
+      </button>
+    </section>
+
+    @if (getFilteredNotifications().length === 0) {
+      <section class="state-card">
+        <h2>No matching notifications</h2>
+        <p>Try a different filter to see more activity.</p>
+      </section>
+    } @else {
     <section class="notification-list">
-      @for (notification of notifications(); track notification.id) {
+      @for (notification of getFilteredNotifications(); track notification.id) {
         <article class="notification-card" [class.notification-card--read]="notification.isRead">
           <div class="notification-top">
             <div>
@@ -64,5 +82,6 @@
         </article>
       }
     </section>
+    }
   }
 </section>

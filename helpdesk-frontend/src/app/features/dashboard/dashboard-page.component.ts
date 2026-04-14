@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { NotificationItem, NotificationService } from '../notifications/notification.service';
@@ -16,7 +16,6 @@ export class DashboardPageComponent {
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
   private readonly ticketService = inject(TicketService);
-  private readonly router = inject(Router);
 
   protected readonly email = this.authService.getEmail();
   protected readonly role = this.authService.getRole();
@@ -28,15 +27,6 @@ export class DashboardPageComponent {
 
   constructor() {
     this.loadDashboardData();
-  }
-
-  protected goToTickets(): void {
-    void this.router.navigateByUrl('/tickets');
-  }
-
-  protected logout(): void {
-    this.authService.logout();
-    void this.router.navigateByUrl('/login');
   }
 
   protected reload(): void {
@@ -71,18 +61,26 @@ export class DashboardPageComponent {
     return ['New', 'Assigned', 'In Progress', 'Resolved', 'Closed'][status] ?? 'Unknown';
   }
 
-  protected getDisplayName(): string {
-    const email = this.email ?? '';
-
-    if (!email) {
-      return 'Workspace User';
+  protected getFocusLabel(): string {
+    switch (this.role) {
+      case 'Admin':
+        return 'Admin overview';
+      case 'Agent':
+        return 'Assigned work view';
+      default:
+        return 'Requester view';
     }
+  }
 
-    return email
-      .replace('@helpdesk.com', '')
-      .replace('@test.com', '')
-      .replace(/[._-]/g, ' ')
-      .replace(/\b\w/g, (character) => character.toUpperCase());
+  protected getFocusDescription(): string {
+    switch (this.role) {
+      case 'Admin':
+        return 'Track overall workload, assign tickets, and keep the helpdesk queue healthy.';
+      case 'Agent':
+        return 'Focus on active tickets, recent updates, and anything waiting for your next action.';
+      default:
+        return 'Watch your requests, recent updates, and the latest responses from the support team.';
+    }
   }
 
   private loadDashboardData(): void {

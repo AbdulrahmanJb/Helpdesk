@@ -1,28 +1,25 @@
 <main class="dashboard-shell">
   <section class="hero-card">
-    <div class="hero-top">
-      <div class="identity-block">
-        <p class="eyebrow">Operations Hub</p>
-        <div class="identity-row">
-          <h1>Helpdesk Command Center</h1>
-          <div class="identity-chip">
-            <span class="identity-name">{{ getDisplayName() }}</span>
-            <span class="identity-role">{{ role }}</span>
-          </div>
-        </div>
-      </div>
+    <p class="eyebrow">Operations Hub</p>
+    <h1>Helpdesk Command Center</h1>
+    <p class="support-copy">
+      {{ getFocusDescription() }}
+    </p>
 
-      <div class="hero-actions">
-        <button type="button" class="primary-button" (click)="goToTickets()">Open Workspace</button>
-        <a routerLink="/tickets/new" class="secondary-link">New Ticket</a>
-        <button type="button" class="secondary-button" (click)="reload()">Refresh</button>
-        <button type="button" class="ghost-button" (click)="logout()">Logout</button>
+    <div class="hero-summary">
+      <div class="hero-summary__item">
+        <span class="hero-summary__label">View</span>
+        <strong>{{ getFocusLabel() }}</strong>
+      </div>
+      <div class="hero-summary__item">
+        <span class="hero-summary__label">Unread updates</span>
+        <strong>{{ unreadCount() }}</strong>
+      </div>
+      <div class="hero-summary__item">
+        <span class="hero-summary__label">Tickets in queue</span>
+        <strong>{{ tickets().length }}</strong>
       </div>
     </div>
-
-    <p class="support-copy">
-      Keep an eye on ticket volume, unread updates, and the latest work happening across your queue.
-    </p>
   </section>
 
   @if (isLoading()) {
@@ -36,29 +33,37 @@
     </section>
   } @else {
     <section class="dashboard-grid">
+      <a routerLink="/tickets" [queryParams]="{ filter: 'open' }" class="metric-link metric-link--primary">
       <article class="metric-card metric-card--primary">
         <p class="metric-label">Open Tickets</p>
         <h2>{{ getOpenTicketCount() }}</h2>
         <p>Tickets that still need work or follow-up.</p>
       </article>
+      </a>
 
+      <a routerLink="/tickets" [queryParams]="{ filter: 'assigned' }" class="metric-link">
       <article class="metric-card">
         <p class="metric-label">Assigned</p>
         <h2>{{ getAssignedTicketCount() }}</h2>
         <p>Tickets that already have an owner.</p>
       </article>
+      </a>
 
+      <a routerLink="/tickets" [queryParams]="{ filter: 'resolved' }" class="metric-link">
       <article class="metric-card">
         <p class="metric-label">Resolved / Closed</p>
         <h2>{{ getResolvedTicketCount() }}</h2>
         <p>Tickets that have reached an end state.</p>
       </article>
+      </a>
 
+      <a routerLink="/notifications" [queryParams]="{ filter: 'unread' }" class="metric-link">
       <article class="metric-card">
         <p class="metric-label">Unread Updates</p>
         <h2>{{ unreadCount() }}</h2>
         <p>Notifications waiting for your attention.</p>
       </article>
+      </a>
 
       <article class="panel-card panel-card--workspace">
         <div class="panel-header">
@@ -66,7 +71,10 @@
             <p class="panel-eyebrow">Queue Overview</p>
             <h3>Recent Tickets</h3>
           </div>
-          <a routerLink="/tickets" class="panel-link">View all tickets</a>
+          <div class="panel-actions">
+            <a routerLink="/tickets/new" class="panel-link">Create new</a>
+            <a routerLink="/tickets" class="panel-link">View all tickets</a>
+          </div>
         </div>
 
         @if (getRecentTickets().length === 0) {

@@ -1,49 +1,69 @@
 <main class="login-shell">
-  <section class="login-card">
-    <div class="brand-block">
-      <p class="eyebrow">Helpdesk System</p>
-      <h1>Sign in to continue</h1>
+  <section class="login-layout">
+    <article class="login-intro">
+      <p class="eyebrow">Helpdesk Portal</p>
+      <h1>Operational support starts here.</h1>
       <p class="support-copy">
-        Use your requester, agent, or admin account to access the ticketing system.
-      </p>
-    </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-form">
-      <label class="field">
-        <span>Email</span>
-        <input type="email" formControlName="email" placeholder="admin@helpdesk.com" />
-      </label>
-
-      <p class="field-error" *ngIf="loginForm.controls.email.touched && loginForm.controls.email.invalid">
-        Enter a valid email address.
+        Sign in to manage incoming requests, track updates, and keep communication moving across your support workflow.
       </p>
 
-      <label class="field">
-        <span>Password</span>
-        <input type="password" formControlName="password" placeholder="123456" />
-      </label>
+      <div class="intro-grid">
+        <article>
+          <h2>One workspace</h2>
+          <p>Tickets, comments, attachments, and notifications stay connected in a single flow.</p>
+        </article>
+        <article>
+          <h2>Role-based access</h2>
+          <p>Requesters, agents, and admins each get the tools and visibility they need.</p>
+        </article>
+      </div>
 
-      <p
-        class="field-error"
-        *ngIf="loginForm.controls.password.touched && loginForm.controls.password.invalid"
-      >
-        Password must be at least 6 characters.
-      </p>
+      <div class="account-card">
+        <p>Quick test accounts</p>
+        <ul>
+          <li>Admin: admin@helpdesk.com / 123456</li>
+          <li>Requester: requester@test.com / 123456</li>
+          <li>Agent: agent@test.com / 123456</li>
+        </ul>
+      </div>
+    </article>
 
-      <p class="submit-error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+    <section class="login-card">
+      <div class="brand-block">
+        <p class="eyebrow">Sign In</p>
+        <h2>Welcome back</h2>
+        <p class="support-copy">
+          Use your work account to enter the helpdesk dashboard.
+        </p>
+      </div>
 
-      <button type="submit" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
-      </button>
-    </form>
+      <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-form" novalidate>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="admin@helpdesk.com" />
+        </label>
 
-    <div class="hint-card">
-      <p>Quick test accounts:</p>
-      <ul>
-        <li>Admin: `admin@helpdesk.com` / `123456`</li>
-        <li>Requester: `requester@test.com` / `123456`</li>
-        <li>Agent: `agent@test.com` / `123456`</li>
-      </ul>
-    </div>
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+          <p class="field-error">Enter a valid email address.</p>
+        }
+
+        <label class="field">
+          <span>Password</span>
+          <input type="password" formControlName="password" placeholder="123456" />
+        </label>
+
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+          <p class="field-error">Password must be at least 6 characters.</p>
+        }
+
+        @if (errorMessage()) {
+          <p class="submit-error">{{ errorMessage() }}</p>
+        }
+
+        <button type="submit" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Signing in...' : 'Sign In' }}
+        </button>
+      </form>
+    </section>
   </section>
 </main>
