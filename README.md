@@ -1,6 +1,10 @@
 # Helpdesk
 
-ASP.NET Core helpdesk API project for managing support workflows. The repository is structured as a backend-focused application with API and test projects, making it a good place to show service design, controller organization, and .NET development practices.
+ASP.NET Core helpdesk API project for managing support workflows. The repository is backend-focused and demonstrates .NET API structure, controller organization, OpenAPI setup, and a separate test project.
+
+## Portfolio Focus
+
+This project is useful for showing backend fundamentals: API project layout, service-oriented thinking, test structure, and support-system workflow design.
 
 ## Tech Stack
 
@@ -38,6 +42,9 @@ dotnet build
 dotnet test
 ```
 
-## Notes
+## Next Improvements
 
-This project is a work in progress. The next polish items are expanding the README with endpoint examples, adding screenshots or API request samples, and documenting the core ticket workflow.
+- Document endpoint examples and request/response shapes.
+- Add screenshots or OpenAPI examples.
+- Expand test coverage around the core ticket workflow.
+- Add CI checks for build and tests.
